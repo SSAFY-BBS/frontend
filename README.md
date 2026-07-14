@@ -1,2 +1,1 @@
-# frontend
-BBS frontend
+# SSAFY BBS Project
