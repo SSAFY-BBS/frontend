@@ -88,7 +88,7 @@ const sendMessage = async () => {
 
   try {
     isTyping.value = true;
-    const reply = await sendChatMessage(userMsg);
+    const reply = await sendChatMessage(userMsg, '서울')
     isTyping.value = false;
     messages.value.push({ text: reply, isMine: false });
     saveHistory();
