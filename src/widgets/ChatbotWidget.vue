@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-6 right-6 z-50">
+  <div class="fixed bottom-4 right-4 z-50 sm:bottom-6 sm:right-6">
     <!-- Collapsed State (Floating Button) -->
     <button 
       v-if="!isOpen" 
@@ -11,7 +11,7 @@
     </button>
 
     <!-- Expanded State (Chat Window) -->
-    <div v-else class="w-80 sm:w-96 h-[32rem] bg-white border rounded-lg shadow-xl flex flex-col overflow-hidden">
+    <div v-else class="w-full max-w-xs sm:max-w-md sm:w-96 h-[32rem] bg-white border rounded-lg shadow-xl flex flex-col overflow-hidden fixed sm:static bottom-0 right-0 left-0 mx-auto">
       <!-- Header -->
       <div class="bg-sky-500 text-white p-3 flex justify-between items-center">
         <span class="font-bold">LocalHub 챗봇</span>
@@ -25,6 +25,7 @@
         <div v-for="(msg, index) in messages" :key="index" :class="['max-w-[80%] rounded-lg p-3 text-sm', msg.isMine ? 'bg-sky-100 text-gray-800 self-end' : 'bg-gray-200 text-gray-800 self-start']">
           {{ msg.text }}
         </div>
+        <div v-if="isTyping" class="max-w-[80%] rounded-lg p-3 text-sm bg-gray-200 self-start">응답을 준비 중입니다...</div>
       </div>
 
       <!-- Input Area -->
@@ -50,9 +51,25 @@ const isOpen = ref(false);
 const inputMsg = ref('');
 const chatContainer = ref<HTMLElement | null>(null);
 
-const messages = ref<{ text: string; isMine: boolean }[]>([
-  { text: '안녕하세요! 궁금한 지역 정보를 물어보세요.', isMine: false }
-]);
+const messages = ref<{ text: string; isMine: boolean }[]>([]);
+const isTyping = ref(false);
+
+// load history from localStorage
+const loadHistory = () => {
+  try {
+    const raw = localStorage.getItem('localhub_chat_history');
+    if (raw) messages.value = JSON.parse(raw);
+    if (!messages.value.length) messages.value.push({ text: '안녕하세요! 궁금한 지역 정보를 물어보세요.', isMine: false });
+  } catch (e) {
+    messages.value = [{ text: '안녕하세요! 궁금한 지역 정보를 물어보세요.', isMine: false }];
+  }
+};
+
+const saveHistory = () => {
+  localStorage.setItem('localhub_chat_history', JSON.stringify(messages.value));
+};
+
+loadHistory();
 
 const scrollToBottom = async () => {
   await nextTick();
@@ -70,9 +87,13 @@ const sendMessage = async () => {
   scrollToBottom();
 
   try {
+    isTyping.value = true;
     const reply = await sendChatMessage(userMsg);
+    isTyping.value = false;
     messages.value.push({ text: reply, isMine: false });
+    saveHistory();
   } catch (error) {
+    isTyping.value = false;
     messages.value.push({ text: '서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.', isMine: false });
   }
   scrollToBottom();
