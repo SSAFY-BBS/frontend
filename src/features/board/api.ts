@@ -2,7 +2,7 @@ import { apiClient } from '@/shared/api/client';
 import type { Post } from '@/entities/post/types';
 
 export const fetchPosts = async (page: number, keyword?: string) => {
-  const { data } = await apiClient.get<Post[]>('/board', { params: { page, keyword } });
+  const { data } = await apiClient.get<Post[]>('/api/board', { params: { page, keyword } });
   return data;
 };
 
