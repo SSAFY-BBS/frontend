@@ -8,7 +8,11 @@
       </p>
     </section>
 
-    <StatsSummaryWidget
+      <div class="mb-6">
+        <WeatherWidget />
+      </div>
+
+      <StatsSummaryWidget
       :total-posts="totalPosts"
       :average-views="averageViews"
       :total-likes="totalLikes"
@@ -76,6 +80,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import StatsSummaryWidget from '@/widgets/StatsSummaryWidget.vue'
+import WeatherWidget from '@/widgets/WeatherWidget.vue'
 import PopularPostsWidget from '@/widgets/PopularPostsWidget.vue'
 import CategoryDistributionWidget from '@/widgets/CategoryDistributionWidget.vue'
 
