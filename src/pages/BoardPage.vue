@@ -280,7 +280,7 @@ const posts = ref<Post[]>([])
 const selectedPost = ref<Post | null>(null)
 const interactionState = ref<InteractionState>({ likedPosts: [], viewedPosts: [] })
 const isLikeProcessing = ref(false) // API 중복 호출 방지 플래그
-const currentPage = ref(1)
+const currentPage = ref(1) 
 const perPage = ref(10)
 
 const loadInteractionState = () => {
@@ -411,8 +411,6 @@ const confirmAction = async () => {
     const msg = err?.message ?? '처리 중 오류가 발생했습니다.'
     alert(msg)
   }
-
-}
 
 // ----------------------------------------------------
 // 변경 사항: API 연동 및 상태 갱신 로직 적용
