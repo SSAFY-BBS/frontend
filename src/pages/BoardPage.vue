@@ -411,6 +411,7 @@ const confirmAction = async () => {
     const msg = err?.message ?? '처리 중 오류가 발생했습니다.'
     alert(msg)
   }
+}
 
 // ----------------------------------------------------
 // 변경 사항: API 연동 및 상태 갱신 로직 적용
