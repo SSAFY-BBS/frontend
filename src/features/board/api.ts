@@ -2,7 +2,7 @@ import { apiClient } from '@/shared/api/client';
 import type { Post } from '@/entities/post/types';
 
 export const fetchPosts = async (page: number, keyword?: string) => {
-  const { data } = await apiClient.get<Post[]>('/board', { params: { page, keyword } });
+  const { data } = await apiClient.get<Post[]>('/api/board', { params: { page, keyword } });
   return data;
 };
 
@@ -64,3 +64,14 @@ export const boardApi = {
     return response.json();
   },
 };
+
+export const verifyPassword = async (boardId: number, password: string): Promise<boolean> => {
+  try {
+    const { data } = await apiClient.post<{ valid: boolean }>(`/api/board/${boardId}/verify-password`, { password })
+  return data?.valid === true
+  } catch (err: any) {
+    const detail = err?.response?.data?.detail
+    if (detail) throw new Error(detail)
+    throw err
+  }
+}

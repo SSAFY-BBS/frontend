@@ -1,7 +1,10 @@
 export interface Post {
   id: number;
+  cat_id: number;
   title: string;
   content: string;
-  createdAt: string;
-  // 익명 커뮤니티이므로 작성자 ID 없음. 수정/삭제 시 평문 비밀번호 검증
+  like_count: number;
+  view_count: number;
+  created_at: string;
+  updated_at: string;
 }
