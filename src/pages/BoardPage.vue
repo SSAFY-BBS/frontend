@@ -89,13 +89,13 @@
 
             <tbody>
               <tr
-                v-for="(post, idx) in filteredPosts"
+                v-for="(post, idx) in paginatedPosts"
                 :key="post.id"
                 @click="openPostDetail(post)"
                 class="cursor-pointer border-t border-slate-100 transition-all duration-300 hover:bg-sky-50/60 hover:translate-x-1"
               >
                 <td class="px-4 py-4 text-center text-sm text-slate-500">
-                  {{ filteredPosts.length - idx }}
+                  {{ (currentPage - 1) * perPage + (idx + 1) }}
                 </td>
                 <td class="px-4 py-4">
                   <div class="flex items-center justify-between gap-3">
@@ -133,29 +133,20 @@
         <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
           <button
             class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            &lt;
-          </button>
+           :disabled="currentPage===1" @click="currentPage--">&lt;</button>
+
           <button
-            class="rounded-full border border-sky-500 bg-sky-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]"
+            v-for="p in totalPages"
+            :key="p"
+            :class="p === currentPage ? 'rounded-full border border-sky-500 bg-sky-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]' : 'rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600'"
+            @click="currentPage = p"
           >
-            1
+            {{ p }}
           </button>
-          <button
-            class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            2
-          </button>
+
           <button
             class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            3
-          </button>
-          <button
-            class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            &gt;
-          </button>
+            :disabled="currentPage===totalPages" @click="currentPage++">&gt;</button>
         </div>
       </div>
     </section>
@@ -289,6 +280,8 @@ const posts = ref<Post[]>([])
 const selectedPost = ref<Post | null>(null)
 const interactionState = ref<InteractionState>({ likedPosts: [], viewedPosts: [] })
 const isLikeProcessing = ref(false) // API 중복 호출 방지 플래그
+const currentPage = ref(1) 
+const perPage = ref(10)
 
 const loadInteractionState = () => {
   if (typeof window === 'undefined') return
@@ -335,6 +328,7 @@ onMounted(() => {
 })
 
 const handleSearch = async () => {
+  currentPage.value = 1
   await loadPosts(1, searchQuery.value)
 }
 
@@ -474,4 +468,13 @@ const filteredPosts = computed(() => {
     return matchesCategory && (searchQuery.value ? matchesSearch : true)
   })
 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredPosts.value.length / perPage.value)))
+
+
+const paginatedPosts = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  return filteredPosts.value.slice(start, start + perPage.value)
+})
+
 </script>
