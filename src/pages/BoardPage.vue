@@ -332,10 +332,10 @@ const handleSearch = () => {
   // API 연동 로직
 }
 
-const openEditModal = (_post: { id: number }) => {
+const openEditModal = (post: { id: number }) => {
   modalMode.value = 'edit'
   passwordInput.value = ''
-  targetPostId.value = null
+  targetPostId.value = post.id
   isModalOpen.value = true
 }
 
