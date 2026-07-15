@@ -25,12 +25,16 @@
           <div>
             <label class="mb-2 block text-sm font-semibold text-slate-700">카테고리</label>
             <select
-              v-model="form.category"
+              v-model="form.categoryId"
               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
             >
-              <option value="tour">관광지</option>
-              <option value="food">맛집</option>
-              <option value="festival">축제·행사</option>
+              <option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.name }}
+              </option>
             </select>
           </div>
 
@@ -75,16 +79,32 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { fetchCategories, type Category } from '@/features/category/api'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const form = reactive({
   title: '',
-  category: 'tour',
+  categoryId: '',
   content: '',
   password: '',
+})
+
+const categories = ref<Category[]>([])
+
+onMounted(async () => {
+  try {
+    categories.value = await fetchCategories()
+    const firstCategory = categories.value[0]
+
+    if (firstCategory) {
+      form.categoryId = firstCategory.id
+    }
+  } catch (err) {
+    console.error('Failed to fetch categories:', err)
+  }
 })
 
 const handleSubmit = () => {
