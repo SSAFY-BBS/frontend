@@ -1,9 +1,10 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import HomePage from '@/pages/HomePage.vue';
-import FestivalPage from '@/pages/FestivalPage.vue';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import HomePage from '@/pages/HomePage.vue'
+import FestivalPage from '@/pages/FestivalPage.vue'
 import BoardWritePage from '@/pages/BoardWritePage.vue'
 import BoardEditPage from '@/pages/BoardEditPage.vue'
 import MealFriendPage from '@/pages/MealFriendPage.vue'
+import MapPage from '@/pages/MapPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -35,12 +36,17 @@ const routes: RouteRecordRaw[] = [
     path: '/meal-friend',
     name: 'MealFriend',
     component: MealFriendPage,
-  }
-];
+  },
+  {
+    path: '/map',
+    name: 'Map',
+    component: MapPage,
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-});
+})
 
-export default router;
+export default router
