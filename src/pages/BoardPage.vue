@@ -247,7 +247,7 @@
 import { fetchCategories, type Category } from '@/features/category/api'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { boardApi, fetchPosts } from '@/features/board/api'
+import { boardApi, fetchPosts, verifyPassword } from '@/features/board/api'
 
 type Post = {
   id: number
@@ -363,10 +363,10 @@ const loadPosts = async (page = 1, keyword?: string) => {
     }
 }
 
-const openEditModal = (_post: { id: number }) => {
+const openEditModal = (post: { id: number }) => {
   modalMode.value = 'edit'
   passwordInput.value = ''
-  targetPostId.value = null
+  targetPostId.value = post.id
   isModalOpen.value = true
 }
 
@@ -383,21 +383,35 @@ const closeModal = () => {
   targetPostId.value = null
 }
 
-const confirmAction = () => {
+const confirmAction = async () => {
   if (!passwordInput.value) {
     alert('비밀번호를 입력해주세요.')
     return
   }
 
-  if (modalMode.value === 'delete' && targetPostId.value !== null) {
-    posts.value = posts.value.filter((post) => post.id !== targetPostId.value)
-    alert('게시글이 삭제되었습니다.')
-    closeModal()
+  const id = targetPostId.value
+  if (!id) {
+    alert('게시글을 선택해주세요.')
     return
   }
 
-  closeModal()
-  router.push('/board/edit')
+  try {
+    await verifyPassword(id, passwordInput.value)
+
+    if (modalMode.value === 'delete' && targetPostId.value !== null) {
+      posts.value = posts.value.filter((post) => post.id !== targetPostId.value)
+      alert('게시글이 삭제되었습니다.')
+      closeModal()
+      return
+    }
+
+    closeModal()
+    router.push('/board/edit')
+  } catch (err: any) {
+    const msg = err?.message ?? '처리 중 오류가 발생했습니다.'
+    alert(msg)
+  }
+  
 }
 
 // ----------------------------------------------------

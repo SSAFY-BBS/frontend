@@ -64,3 +64,14 @@ export const boardApi = {
     return response.json();
   },
 };
+
+export const verifyPassword = async (boardId: number, password: string): Promise<boolean> => {
+  try {
+    const { data } = await apiClient.post<{ valid: boolean }>(`/api/board/${boardId}/verify-password`, { password })
+  return data?.valid === true
+  } catch (err: any) {
+    const detail = err?.response?.data?.detail
+    if (detail) throw new Error(detail)
+    throw err
+  }
+}
