@@ -10,6 +10,15 @@
       </p>
     </section>
 
+      <div class="mb-6">
+        <WeatherWidget />
+      </div>
+
+      <StatsSummaryWidget
+      :total-posts="totalPosts"
+      :average-views="averageViews"
+      :total-likes="totalLikes"
+    />
     <!-- 로딩 상태 -->
     <div v-if="isLoading" class="flex h-64 items-center justify-center">
       <div class="h-8 w-8 animate-spin rounded-full border-4 border-sky-200 border-t-sky-500"></div>
@@ -95,12 +104,18 @@
 
 <script setup lang="ts">
 import StatsSummaryWidget from '@/widgets/StatsSummaryWidget.vue'
+import WeatherWidget from '@/widgets/WeatherWidget.vue'
 import PopularPostsWidget from '@/widgets/PopularPostsWidget.vue'
 import CategoryDistributionWidget from '@/widgets/CategoryDistributionWidget.vue'
 
 // API 통신을 담당하는 composable 주입
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard'
 
+const categoryItems = computed(() => [
+  { label: 'tour', value: mockPosts.value.filter(post => post.category === 'tour').length, color: '#38bdf8' },
+  { label: 'food', value: mockPosts.value.filter(post => post.category === 'food').length, color: '#fb923c' },
+  { label: 'festival', value: mockPosts.value.filter(post => post.category === 'festival').length, color: '#818cf8' },
+])
 // 데이터 패칭 로직과 상태를 그대로 가져와 바인딩
 const { isLoading, error, summary, topViews, topLikes, categories, refresh } = useDashboard()
 </script>
