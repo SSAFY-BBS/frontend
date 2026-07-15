@@ -62,16 +62,14 @@
         <div class="mb-6 flex flex-wrap gap-2">
           <button
             v-for="category in categories"
-            :key="category.value"
-            @click="selectedCategory = category.value"
+            :key="category.id"
+            @click="selectedCategory = category.id === 'all' ? 'all' : Number(category.id)"
             class="rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-300"
-            :class="
-              selectedCategory === category.value
-                ? 'border-sky-500 bg-sky-500 text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700'
-            "
+            :class="selectedCategory === category.id
+              ? 'border-sky-500 bg-sky-500 text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700'"
           >
-            {{ category.label }}
+            {{ category.name }}
           </button>
         </div>
 
@@ -91,13 +89,13 @@
 
             <tbody>
               <tr
-                v-for="(post, idx) in filteredPosts"
+                v-for="(post, idx) in paginatedPosts"
                 :key="post.id"
                 @click="openPostDetail(post)"
                 class="cursor-pointer border-t border-slate-100 transition-all duration-300 hover:bg-sky-50/60 hover:translate-x-1"
               >
                 <td class="px-4 py-4 text-center text-sm text-slate-500">
-                  {{ filteredPosts.length - idx }}
+                  {{ (currentPage - 1) * perPage + (idx + 1) }}
                 </td>
                 <td class="px-4 py-4">
                   <div class="flex items-center justify-between gap-3">
@@ -105,7 +103,7 @@
                       <span
                         class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700"
                       >
-                        {{ post.tag }}
+                        {{ post.catName }}
                       </span>
                       <span class="text-sm font-medium text-slate-800">{{ post.title }}</span>
                     </div>
@@ -126,7 +124,7 @@
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-4 text-center text-sm text-slate-500">{{ post.date }}</td>
+                <td class="px-4 py-4 text-center text-sm text-slate-500">{{ post.createdAt }}</td>
               </tr>
             </tbody>
           </table>
@@ -135,29 +133,20 @@
         <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
           <button
             class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            &lt;
-          </button>
+           :disabled="currentPage===1" @click="currentPage--">&lt;</button>
+
           <button
-            class="rounded-full border border-sky-500 bg-sky-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]"
+            v-for="p in totalPages"
+            :key="p"
+            :class="p === currentPage ? 'rounded-full border border-sky-500 bg-sky-500 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]' : 'rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600'"
+            @click="currentPage = p"
           >
-            1
+            {{ p }}
           </button>
-          <button
-            class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            2
-          </button>
+
           <button
             class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            3
-          </button>
-          <button
-            class="rounded-full border border-slate-200 px-3.5 py-2 text-sm text-slate-500 transition-all duration-300 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600"
-          >
-            &gt;
-          </button>
+            :disabled="currentPage===totalPages" @click="currentPage++">&gt;</button>
         </div>
       </div>
     </section>
@@ -210,10 +199,10 @@
         <div class="flex items-start justify-between gap-4">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">
-              {{ selectedPost.tag }}
+              {{ selectedPost.catName }}
             </p>
             <h2 class="mt-2 text-2xl font-bold text-slate-800">{{ selectedPost.title }}</h2>
-            <p class="mt-2 text-sm text-slate-500">{{ selectedPost.date }}</p>
+            <p class="mt-2 text-sm text-slate-500">{{ selectedPost.createdAt }}</p>
           </div>
 
           <button
@@ -232,8 +221,8 @@
 
         <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3 text-sm text-slate-500">
-            <span>조회 {{ selectedPost.views }}</span>
-            <span>좋아요 {{ selectedPost.likes }}</span>
+            <span>조회 {{ selectedPost.viewCount }}</span>
+            <span>좋아요 {{ selectedPost.likeCount }}</span>
           </div>
 
           <button
@@ -255,22 +244,21 @@
 </template>
 
 <script setup lang="ts">
+import { fetchCategories, type Category } from '@/features/category/api'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { boardApi } from '@/features/board/api'
-import { posts } from '@/features/board/mocks/post'
-
-type PostCategory = 'tour' | 'food' | 'festival'
+import { boardApi, fetchPosts, verifyPassword } from '@/features/board/api'
 
 type Post = {
   id: number
+  catId: number;
+  catName?: string;
   title: string
-  date: string
-  tag: string
-  category: PostCategory
-  content: string
-  likes: number
-  views: number
+  content: string;
+  likeCount: number;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 type InteractionState = {
@@ -286,17 +274,14 @@ const isModalOpen = ref(false)
 const passwordInput = ref('')
 const modalMode = ref<'edit' | 'delete'>('edit')
 const targetPostId = ref<number | null>(null)
-const selectedCategory = ref<PostCategory | 'all'>('all')
+const selectedCategory = ref<number | 'all'>('all')
+const categories = ref<Category[]>([{ id: 'all', name: '전체' }])
+const posts = ref<Post[]>([])
 const selectedPost = ref<Post | null>(null)
 const interactionState = ref<InteractionState>({ likedPosts: [], viewedPosts: [] })
 const isLikeProcessing = ref(false) // API 중복 호출 방지 플래그
-
-const categories = [
-  { label: '전체', value: 'all' },
-  { label: '관광지', value: 'tour' },
-  { label: '맛집', value: 'food' },
-  { label: '축제·행사', value: 'festival' },
-] as const
+const currentPage = ref(1)
+const perPage = ref(10)
 
 const loadInteractionState = () => {
   if (typeof window === 'undefined') return
@@ -324,12 +309,58 @@ const isPostLiked = (postId: number | null) => {
   return !!postId && interactionState.value.likedPosts.includes(postId)
 }
 
+const findCategoryName = (catId?: number | string) => {
+      const category = categories.value.find(c => String(c.id) === String(catId))
+      return category ? category.name : ''
+    }
+
+    const formatDate = (iso?: string) => {
+      if (!iso) return ''
+      const d = new Date(iso)
+      if (isNaN(d.getTime())) return ''
+      const mm  = String(d.getMonth() + 1).padStart(2, '0')
+      const dd  = String(d.getDate()).padStart(2, '0')
+      return `${mm}.${dd}`
+    }
+
 onMounted(() => {
   loadInteractionState()
 })
 
-const handleSearch = () => {
-  // API 연동 로직
+const handleSearch = async () => {
+  currentPage.value = 1
+  await loadPosts(1, searchQuery.value)
+}
+
+onMounted(async () => {
+  try {
+    const remoteCategories = await fetchCategories()
+    categories.value = [{ id: 'all', name: '전체' }, ...remoteCategories]
+  } catch (err) {
+    console.error('Failed to fetch categories:', err)
+  }
+
+  await loadPosts(1)
+})
+
+const loadPosts = async (page = 1, keyword?: string) => {
+  try {
+      const remotePosts = await fetchPosts(page, keyword)
+
+      posts.value = remotePosts.map((p) => ({
+        id: p.id,
+        catId: Number(p.cat_id),
+        catName: findCategoryName(p.cat_id),
+        title: p.title,
+        content: p.content,
+        viewCount: p.view_count,
+        likeCount: p.like_count,
+        createdAt: formatDate(p.created_at),
+        updatedAt: formatDate(p.updated_at),
+      }))
+    } catch (err) {
+      console.error('Failed to fetch posts:', err)
+    }
 }
 
 const openEditModal = (post: { id: number }) => {
@@ -352,21 +383,35 @@ const closeModal = () => {
   targetPostId.value = null
 }
 
-const confirmAction = () => {
+const confirmAction = async () => {
   if (!passwordInput.value) {
     alert('비밀번호를 입력해주세요.')
     return
   }
 
-  if (modalMode.value === 'delete' && targetPostId.value !== null) {
-    posts.value = posts.value.filter((post) => post.id !== targetPostId.value)
-    alert('게시글이 삭제되었습니다.')
-    closeModal()
+  const id = targetPostId.value
+  if (!id) {
+    alert('게시글을 선택해주세요.')
     return
   }
 
-  closeModal()
-  router.push('/board/edit')
+  try {
+    await verifyPassword(id, passwordInput.value)
+
+    if (modalMode.value === 'delete' && targetPostId.value !== null) {
+      posts.value = posts.value.filter((post) => post.id !== targetPostId.value)
+      alert('게시글이 삭제되었습니다.')
+      closeModal()
+      return
+    }
+
+    closeModal()
+    router.push('/board/edit')
+  } catch (err: any) {
+    const msg = err?.message ?? '처리 중 오류가 발생했습니다.'
+    alert(msg)
+  }
+
 }
 
 // ----------------------------------------------------
@@ -384,7 +429,7 @@ const openPostDetail = async (post: Post) => {
       const response = await boardApi.incrementViewCount(post.id)
 
       // 3. 서버에서 반환된 정확한 카운트로 로컬 상태 갱신
-      post.views = response.view_count
+      post.viewCount = response.view_count
 
       // 4. 로컬 스토리지 업데이트를 통해 중복 조회 차단
       interactionState.value.viewedPosts.push(post.id)
@@ -413,7 +458,7 @@ const handleLike = async (post: Post) => {
     const response = await boardApi.incrementLikeCount(post.id)
 
     // 2. 서버에서 반환된 정확한 카운트로 로컬 상태 갱신
-    post.likes = response.like_count
+    post.likeCount = response.like_count
 
     // 3. 로컬 스토리지 업데이트를 통해 중복 좋아요 차단
     interactionState.value.likedPosts.push(post.id)
@@ -431,10 +476,19 @@ const handleLike = async (post: Post) => {
 const filteredPosts = computed(() => {
   return posts.value.filter((post) => {
     const matchesCategory =
-      selectedCategory.value === 'all' || post.category === selectedCategory.value
+      selectedCategory.value === 'all' || post.catId === selectedCategory.value
     const matchesSearch =
-      post.title.includes(searchQuery.value) || post.tag.includes(searchQuery.value)
+      post.title.includes(searchQuery.value) || (post.catName || '').includes(searchQuery.value)
     return matchesCategory && (searchQuery.value ? matchesSearch : true)
   })
 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredPosts.value.length / perPage.value)))
+
+
+const paginatedPosts = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  return filteredPosts.value.slice(start, start + perPage.value)
+})
+
 </script>
