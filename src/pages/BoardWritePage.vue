@@ -79,6 +79,7 @@
 </template>
 
 <script setup lang="ts">
+import { createPost } from '@/features/board/api'
 import { fetchCategories, type Category } from '@/features/category/api'
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -107,13 +108,25 @@ onMounted(async () => {
   }
 })
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!form.title || !form.content || !form.password) {
     alert('제목, 내용, 비밀번호를 모두 입력해주세요.')
     return
   }
 
-  alert('게시글이 등록되었습니다.')
-  router.push('/board')
+  try {
+    await createPost({
+      cat_id: Number(form.categoryId),
+      title: form.title,
+      content: form.content,
+      password: form.password
+    })
+    alert('게시글이 등록되었습니다.')
+    router.push('/board')
+  } catch (err) {
+    console.error('Failed to create post:', err)
+    alert('게시글 등록에 실패했습니다. 다시 시도해주세요.')
+  }
+
 }
 </script>
