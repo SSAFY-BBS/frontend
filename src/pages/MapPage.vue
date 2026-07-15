@@ -70,7 +70,9 @@ const fetchPlacesData = async (isInitial = false) => {
 
   isLoading.value = true
   try {
-    const response = await fetch(`/api/places?page=${page.value}&limit=30`)
+    const response = await fetch(
+      `https://backend-48mi.onrender.com/api/places?page=${page.value}&limit=30`,
+    )
     const data = await response.json()
 
     const newPlaces = data.items.map((item, idx) => ({
