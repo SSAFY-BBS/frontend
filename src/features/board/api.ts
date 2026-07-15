@@ -7,9 +7,9 @@ export const fetchPosts = async (page: number, keyword?: string) => {
 };
 
 // 생성, 수정, 삭제 요청 (비밀번호 포함)
-export const createPost = async (payload: any) => apiClient.post('/board', payload);
-export const updatePost = async (id: number, payload: any) => apiClient.put(`/board/${id}`, payload);
-export const deletePost = async (id: number, password: string) => apiClient.delete(`/board/${id}`, { data: { password } });
+export const createPost = async (payload: any) => apiClient.post('/api/board', payload);
+export const updatePost = async (id: number, payload: any) => apiClient.put(`/api/board/${id}`, payload);
+export const deletePost = async (id: number, password: string) => apiClient.delete(`/api/board/${id}`, { data: { password } });
 
 export interface ViewCountResponse {
   message: string;

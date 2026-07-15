@@ -25,12 +25,16 @@
           <div>
             <label class="mb-2 block text-sm font-semibold text-slate-700">카테고리</label>
             <select
-              v-model="form.category"
+              v-model="form.categoryId"
               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
             >
-              <option value="tour">관광지</option>
-              <option value="food">맛집</option>
-              <option value="festival">축제·행사</option>
+              <option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.name }}
+              </option>
             </select>
           </div>
 
@@ -75,25 +79,54 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { createPost } from '@/features/board/api'
+import { fetchCategories, type Category } from '@/features/category/api'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const form = reactive({
   title: '',
-  category: 'tour',
+  categoryId: '',
   content: '',
   password: '',
 })
 
-const handleSubmit = () => {
+const categories = ref<Category[]>([])
+
+onMounted(async () => {
+  try {
+    categories.value = await fetchCategories()
+    const firstCategory = categories.value[0]
+
+    if (firstCategory) {
+      form.categoryId = firstCategory.id
+    }
+  } catch (err) {
+    console.error('Failed to fetch categories:', err)
+  }
+})
+
+const handleSubmit = async () => {
   if (!form.title || !form.content || !form.password) {
     alert('제목, 내용, 비밀번호를 모두 입력해주세요.')
     return
   }
 
-  alert('게시글이 등록되었습니다.')
-  router.push('/board')
+  try {
+    await createPost({
+      cat_id: Number(form.categoryId),
+      title: form.title,
+      content: form.content,
+      password: form.password
+    })
+    alert('게시글이 등록되었습니다.')
+    router.push('/board')
+  } catch (err) {
+    console.error('Failed to create post:', err)
+    alert('게시글 등록에 실패했습니다. 다시 시도해주세요.')
+  }
+
 }
 </script>
