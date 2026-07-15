@@ -7,7 +7,7 @@
       </div>
       <div class="text-right flex items-center gap-3">
         <div class="text-2xl font-bold text-slate-800">{{ displayTemp }}</div>
-        <div class="text-xs text-slate-500">{{ weather?.pop ?? '-' }}% 강수확률</div>
+        <div class="text-xs text-slate-500">강수확률 {{ weather?.pop ?? '-' }}%</div>
         <button
           class="ml-2 inline-flex items-center gap-2 rounded bg-slate-100 px-2 py-1 text-xs text-slate-700"
           @click="fetchWeather"
@@ -22,9 +22,9 @@
 
     <div class="mt-3 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="h-10 w-10 flex-shrink-0 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center font-bold">☀️</div>
+        <div class="h-10 w-10 flex-shrink-0 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-lg">{{ weatherIcon }}</div>
         <div>
-          <div class="text-sm font-medium text-slate-700">상태: {{ skyText }}</div>
+          <div class="text-sm font-medium text-slate-700">{{ summaryText }}</div>
           <div class="text-xs text-slate-500">{{ weather?.message }}</div>
         </div>
       </div>
@@ -99,6 +99,41 @@ const skyText = computed(() => {
   if (s === 3) return '구름 많음'
   if (s === 4) return '흐림'
   return '정보 없음'
+})
+
+const weatherIcon = computed(() => {
+  if (!weather.value) return '❓'
+  const t = weather.value.temp
+  const p = weather.value.pop ?? 0
+  const s = weather.value.sky
+
+  // Precipitation overrides sky
+  if (p >= 60) return '⛈️'
+  if (p >= 30) {
+    // if temp <= 0 maybe snow
+    if (t !== null && t <= 0) return '❄️'
+    return '🌧️'
+  }
+
+  if (s === 1) {
+    if (t !== null && t >= 30) return '🥵'
+    return '☀️'
+  }
+  if (s === 3) return '⛅'
+  if (s === 4) return '☁️'
+  return '🌈'
+})
+
+const summaryText = computed(() => {
+  if (!weather.value) return '데이터 없음'
+  const parts: string[] = []
+  const t = weather.value.temp
+  const p = weather.value.pop
+  const s = skyText.value
+  if (s) parts.push(s)
+  if (t !== null) parts.push(`${Math.round(t)}°C`)
+  if (typeof p === 'number') parts.push(`강수확률 ${p}%`)
+  return parts.join(' / ')
 })
 </script>
 
