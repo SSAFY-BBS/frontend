@@ -50,14 +50,14 @@
         <div class="mb-6 flex flex-wrap gap-2">
           <button
             v-for="category in categories"
-            :key="category.value"
-            @click="selectedCategory = category.value"
+            :key="category.id"
+            @click="selectedCategory = category.id"
             class="rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-300"
-            :class="selectedCategory === category.value
+            :class="selectedCategory === category.id
               ? 'border-sky-500 bg-sky-500 text-white shadow-[0_8px_18px_-10px_rgba(14,116,144,0.8)]'
               : 'border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700'"
           >
-            {{ category.label }}
+            {{ category.name }}
           </button>
         </div>
 
@@ -213,17 +213,16 @@
 </template>
 
 <script setup lang="ts">
+import { fetchCategories, type Category } from '@/features/category/api'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-
-type PostCategory = 'tour' | 'food' | 'festival'
 
 type Post = {
   id: number
   title: string
   date: string
   tag: string
-  category: PostCategory
+  category: Category['id']
   content: string
   likes: number
   views: number
@@ -242,16 +241,10 @@ const isModalOpen = ref(false)
 const passwordInput = ref('')
 const modalMode = ref<'edit' | 'delete'>('edit')
 const targetPostId = ref<number | null>(null)
-const selectedCategory = ref<PostCategory | 'all'>('all')
+const selectedCategory = ref<string>('all')
+const categories = ref<Category[]>([{ id: 'all', name: '전체' }])
 const selectedPost = ref<Post | null>(null)
 const interactionState = ref<InteractionState>({ likedPosts: [], viewedPosts: [] })
-
-const categories = [
-  { label: '전체', value: 'all' },
-  { label: '관광지', value: 'tour' },
-  { label: '맛집', value: 'food' },
-  { label: '축제·행사', value: 'festival' },
-] as const
 
 const loadInteractionState = () => {
   if (typeof window === 'undefined') return
@@ -286,6 +279,15 @@ onMounted(() => {
 const handleSearch = () => {
   // API 연동 로직
 }
+
+onMounted(async () => {
+  try {
+    const remote = await fetchCategories()
+    categories.value = [{ id: 'all', name: '전체' }, ...remote]
+  } catch (err) {
+    console.error('Failed to fetch categories:', err)
+  }
+})
 
 const openEditModal = (_post: { id: number }) => {
   modalMode.value = 'edit'
