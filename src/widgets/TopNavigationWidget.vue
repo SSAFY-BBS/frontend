@@ -84,10 +84,13 @@ import confetti from 'canvas-confetti'
 
 const route = useRoute()
 const isMobileMenuOpen = ref(false)
+
+// 네비게이션 항목에 '밥 친구' 추가
 const navItems = [
   { label: '홈', to: '/' },
   { label: '게시판', to: '/board' },
   { label: '축제 캘린더', to: '/festival' },
+  { label: '아 점심 누구랑 먹지 들어온지 얼마 안돼서 사람들이랑 친해지고', to: '/meal-friend' }, 
 ]
 
 const isActive = (to: string) => {
@@ -111,10 +114,8 @@ watch(
 )
 
 const triggerFireworks = () => {
-  const duration = 2000; // 2초간 지속
+  const duration = 2000;
   const end = Date.now() + duration;
-
-  // LocalHub의 테마 컬러(하늘색 계열)를 폭죽 색상으로 지정
   const colors = ['#0ea5e9', '#38bdf8', '#7dd3fc', '#ffffff'];
 
   (function frame() {
@@ -146,7 +147,6 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let backoff = 1000
 
 watch(onlineCount, (newVal, oldVal) => {
-  // 초기 로딩(oldVal이 0)일 때는 터뜨리지 않고, 누군가 새로 들어왔을 때만 트리거
   if (oldVal !== 0 && newVal > oldVal) {
     triggerFireworks();
   }

@@ -3,6 +3,7 @@ import HomePage from '@/pages/HomePage.vue';
 import FestivalPage from '@/pages/FestivalPage.vue';
 import BoardWritePage from '@/pages/BoardWritePage.vue'
 import BoardEditPage from '@/pages/BoardEditPage.vue'
+import MealFriendPage from '@/pages/MealFriendPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -30,6 +31,11 @@ const routes: RouteRecordRaw[] = [
     name: 'BoardEdit',
     component: BoardEditPage,
   },
+  {
+    path: '/meal-friend',
+    name: 'MealFriend',
+    component: MealFriendPage,
+  }
 ];
 
 const router = createRouter({
