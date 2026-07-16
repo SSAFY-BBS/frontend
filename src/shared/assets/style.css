@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* 1. Base Primary Palette (Sky) */
@@ -30,14 +30,27 @@
   /* 3. Semantic Tokens (의미론적 변수 할당) */
   --color-primary: var(--color-sky-500);
   --color-primary-hover: var(--color-sky-600);
-  
+
   --color-bg-default: #ffffff;
   --color-bg-subtle: var(--color-slate-50);
-  
+
   --color-text-strong: var(--color-slate-900);
   --color-text-base: var(--color-slate-700);
   --color-text-muted: var(--color-slate-500);
-  
+
   --color-border-default: var(--color-slate-200);
   --color-border-focus: var(--color-sky-400);
+
+  --font-sans:
+    'Pretendard Variable', Pretendard, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer base {
+  html,
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
