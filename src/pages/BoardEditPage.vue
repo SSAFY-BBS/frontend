@@ -24,12 +24,16 @@
           <div>
             <label class="mb-2 block text-sm font-semibold text-slate-700">카테고리</label>
             <select
-              v-model="form.category"
+              v-model="form.categoryId"
               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
             >
-              <option value="tour">관광지</option>
-              <option value="food">맛집</option>
-              <option value="festival">축제·행사</option>
+              <option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.name }}
+              </option>
             </select>
           </div>
 
@@ -38,6 +42,16 @@
             <textarea
               v-model="form.content"
               rows="8"
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-slate-700">비밀번호</label>
+            <input
+              v-model="form.password"
+              type="password"
+              placeholder="수정/삭제 시 필요한 비밀번호"
               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
             />
           </div>
@@ -63,19 +77,69 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { fetchCategories, type Category } from '@/features/category/api'
+import { fetchPost, updatePost } from '@/features/board/api'
 
 const router = useRouter()
+const route = useRoute()
+
+const idFromQuery = route.query.id || route.params.id
+const postId = Number(idFromQuery)
 
 const form = reactive({
-  title: '기존 게시글 제목',
-  category: 'tour',
-  content: '기존 게시글 내용입니다.',
+  title: '',
+  categoryId: '',
+  content: '',
+  password: '',
 })
 
-const handleSubmit = () => {
-  alert('수정이 완료되었습니다.')
-  router.push('/board')
+const categories = ref<Category[]>([])
+
+onMounted(async () => {
+  try {
+    categories.value = await fetchCategories()
+    const first = categories.value[0]
+    if (first && !form.categoryId) {
+      form.categoryId = first.id
+    }
+
+    if (!postId || isNaN(postId)) {
+      alert('편집할 게시글 ID가 없습니다.')
+      router.push('/board')
+      return
+    }
+
+    const post = await fetchPost(postId)
+    form.title = post.title ?? ''
+    form.content = post.content ?? ''
+    form.categoryId = String(post.cat_id ?? post.catId ?? categories.value[0]?.id ?? '')
+  } catch (err) {
+    console.error('Load failed:', err)
+    alert('데이터를 불러오는 중 오류가 발생했습니다.')
+    router.push('/board')
+  }
+})
+
+const handleSubmit = async () => {
+  if (!form.title || !form.content || !form.password) {
+    alert('제목, 내용, 비밀번호를 모두 입력해주세요.')
+    return
+  }
+
+  try {
+    await updatePost(postId, {
+      cat_id: Number(form.categoryId),
+      title: form.title,
+      content: form.content,
+      password: form.password,
+    })
+    alert('수정이 완료되었습니다.')
+    router.push('/board')
+  } catch (err) {
+    console.error('Update failed:', err)
+    alert('수정 중 오류가 발생했습니다.')
+  }
 }
 </script>

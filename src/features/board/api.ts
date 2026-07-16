@@ -75,3 +75,8 @@ export const verifyPassword = async (boardId: number, password: string): Promise
     throw err
   }
 }
+
+export const fetchPost = async (id: number) => {
+  const { data } = await apiClient.get(`/api/board/${id}`)
+  return data
+}
