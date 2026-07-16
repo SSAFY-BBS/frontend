@@ -1,45 +1,46 @@
 <template>
   <header
-    class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl shadow-[0_8px_30px_-18px_rgba(15,23,42,0.35)]"
+    class="fixed top-4 left-4 right-4 z-50 mx-auto max-w-[1600px] rounded-2xl border border-slate-200 bg-white/95 px-5 py-2.5 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] backdrop-blur-xl transition-all duration-300"
   >
-    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-      <router-link to="/" class="group flex items-center gap-3">
-        <div
-          class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-lg font-black text-white shadow-[0_10px_24px_-12px_rgba(14,116,144,0.65)] transition-transform duration-300 group-hover:scale-105"
-        >
-          L
-        </div>
-        <div class="flex flex-col">
-          <span class="text-lg font-bold tracking-tight text-slate-800">LocalHub</span>
-          <span class="text-[11px] font-medium uppercase tracking-[0.28em] text-sky-600"
-            >Seoul info</span
-          >
-        </div>
-      </router-link>
+    <div class="flex items-center justify-between gap-6">
+      <!-- 1. Left: Logo & Navigation -->
+      <div class="flex items-center gap-8">
+        <router-link to="/" class="text-3xl font-black tracking-tighter text-slate-900">
+          BBS.
+        </router-link>
 
-      <div class="flex items-center gap-3">
-        <nav class="hidden items-center gap-2 md:flex">
+        <nav class="hidden items-center gap-6 xl:flex">
           <router-link
             v-for="item in navItems"
             :key="item.to"
             :to="item.to"
-            class="relative rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition-all duration-300 hover:bg-sky-50 hover:text-sky-700"
-            :class="
-              isActive(item.to)
-                ? 'bg-sky-500 text-white shadow-[0_10px_24px_-14px_rgba(14,116,144,0.7)]'
-                : ''
-            "
+            class="group flex items-center gap-1.5 text-[15px] font-medium text-slate-700 transition-colors hover:text-black"
+            :class="{ 'font-bold text-black': isActive(item.to) }"
+            :title="item.tooltip"
           >
             {{ item.label }}
+
+            <!-- 'New' Badge (e.g. Academy New) -->
+            <span
+              v-if="item.isNew"
+              class="ml-0.5 rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white"
+            >
+              NEW
+            </span>
           </router-link>
         </nav>
+      </div>
 
-        <!-- Online count badge -->
+      <!-- 3. Right: Auth & Action Buttons -->
+      <div class="flex items-center gap-4">
+        <!-- Auth Links -->
+
+        <!-- Be Pro (Solid Black Button) -> Online Count -->
         <div
-          class="hidden items-center gap-2 rounded-md bg-slate-50 px-3 py-1 text-sm text-slate-600 md:flex"
+          class="hidden h-11 items-center justify-center rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white shadow-md transition-transform hover:-translate-y-0.5 sm:flex"
         >
           <svg
-            class="h-4 w-4 text-sky-500"
+            class="mr-2 h-4 w-4 text-sky-400"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -49,15 +50,12 @@
               d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5S14.343 11 16 11zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zM12 14c-3.866 0-7 1.79-7 4v1h14v-1c0-2.21-3.134-4-7-4z"
             ></path>
           </svg>
-          <span class="text-xs text-slate-500">접속</span>
-          <span
-            class="ml-1 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700"
-            >{{ onlineCount }}</span
-          >
+          {{ onlineCount }} Online
         </div>
 
+        <!-- Mobile Menu Toggle -->
         <button
-          class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all duration-300 hover:border-sky-300 hover:text-sky-700 md:hidden"
+          class="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-400 xl:hidden"
           @click="toggleMenu"
           aria-label="메뉴 열기"
         >
@@ -88,41 +86,35 @@
       </div>
     </div>
 
+    <!-- Mobile Dropdown -->
     <transition name="slide-down">
-      <div
-        v-if="isMobileMenuOpen"
-        class="border-t border-slate-200/80 bg-white/95 px-4 py-3 shadow-[0_10px_30px_-16px_rgba(15,23,42,0.35)] backdrop-blur-xl md:hidden"
-      >
-        <div class="mx-auto flex max-w-5xl flex-col gap-2">
+      <div v-if="isMobileMenuOpen" class="mt-3 border-t border-slate-100 pt-3 xl:hidden">
+        <div class="flex flex-col gap-1">
           <router-link
             v-for="item in navItems"
             :key="item.to"
             :to="item.to"
-            class="rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300"
+            class="flex items-center rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors"
             :class="
               isActive(item.to)
-                ? 'bg-sky-500 text-white shadow-[0_10px_24px_-14px_rgba(14,116,144,0.7)]'
-                : 'bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-700'
+                ? 'bg-slate-900 text-white'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
             "
             @click="closeMenu"
           >
             {{ item.label }}
+            <span
+              v-if="item.isNew"
+              class="ml-2 rounded bg-sky-500 px-1.5 py-0.5 text-[10px] font-bold text-white"
+              >NEW</span
+            >
           </router-link>
-          <div class="mt-2 flex items-center gap-2 px-2">
-            <svg
-              class="h-4 w-4 text-sky-500"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5S14.343 11 16 11zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zM12 14c-3.866 0-7 1.79-7 4v1h14v-1c0-2.21-3.134-4-7-4z"
-              ></path>
-            </svg>
-            <span class="text-sm text-slate-600"
-              >접속 <span class="font-semibold">{{ onlineCount }}</span></span
-            >
+
+          <div class="mt-2 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+            <span class="text-sm font-semibold text-slate-600">접속 중인 유저</span>
+            <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white">{{
+              onlineCount
+            }}</span>
           </div>
         </div>
       </div>
@@ -138,19 +130,21 @@ import confetti from 'canvas-confetti'
 const route = useRoute()
 const isMobileMenuOpen = ref(false)
 
-// 네비게이션 항목에 '밥 친구' 추가
+// 레퍼런스의 'Dropdown' 및 'New' 뱃지 UI 트리거 속성 추가
 const navItems = [
-  { label: '홈', to: '/' },
   { label: '게시판', to: '/board' },
   { label: '축제 캘린더', to: '/festival' },
   { label: '지도', to: '/map' },
-  { label: '아 점심 누구랑 먹지 들어온지 얼마 안돼서 사람들이랑 친해지고', to: '/meal-friend' },
+  {
+    label: '저는 친구가 없어요',
+    to: '/meal-friend',
+    isNew: true,
+    tooltip: '아 점심 누구랑 먹지 들어온지 얼마 안돼서 사람들이랑 친해지고',
+  },
 ]
 
 const isActive = (to: string) => {
-  if (to === '/') {
-    return route.path === '/'
-  }
+  if (to === '/') return route.path === '/'
   return route.path.startsWith(to)
 }
 
@@ -173,20 +167,8 @@ const triggerFireworks = () => {
   const colors = ['#0ea5e9', '#38bdf8', '#7dd3fc', '#ffffff']
 
   ;(function frame() {
-    confetti({
-      particleCount: 5,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.8 },
-      colors: colors,
-    })
-    confetti({
-      particleCount: 5,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.8 },
-      colors: colors,
-    })
+    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.8 }, colors: colors })
+    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.8 }, colors: colors })
 
     if (Date.now() < end) {
       requestAnimationFrame(frame)
@@ -194,7 +176,6 @@ const triggerFireworks = () => {
   })()
 }
 
-// --- WebSocket + online count logic ---
 const onlineCount = ref<number>(0)
 let ws: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
@@ -228,15 +209,12 @@ const connectWS = () => {
       if (data && data.type === 'online_count' && typeof data.online_count === 'number') {
         onlineCount.value = data.online_count
       }
-    } catch (e) {
-      // ignore malformed messages
-    }
+    } catch (e) {}
   }
 
   ws.onclose = () => {
     scheduleReconnect()
   }
-
   ws.onerror = () => {
     ws?.close()
   }
@@ -270,13 +248,13 @@ onBeforeUnmount(() => {
 <style scoped>
 .slide-down-enter-active,
 .slide-down-leave-active {
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-down-enter-from,
 .slide-down-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-10px);
 }
 
 .slide-down-enter-to,
