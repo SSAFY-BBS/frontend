@@ -5,6 +5,7 @@ import BoardWritePage from '@/pages/BoardWritePage.vue'
 import BoardEditPage from '@/pages/BoardEditPage.vue'
 import MealFriendPage from '@/pages/MealFriendPage.vue'
 import MapPage from '@/pages/MapPage.vue'
+import ChatRoomPage from '@/pages/ChatRoomPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -41,6 +42,11 @@ const routes: RouteRecordRaw[] = [
     path: '/map',
     name: 'Map',
     component: MapPage,
+  },
+  {
+    path: '/chat',
+    name: 'Chat',
+    component: ChatRoomPage,
   },
 ]
 
