@@ -405,8 +405,8 @@ const confirmAction = async () => {
       return
     }
 
+    router.push({ path: '/board/edit', query: { id: String(targetPostId.value) } })
     closeModal()
-    router.push('/board/edit')
   } catch (err: any) {
     const msg = err?.message ?? '처리 중 오류가 발생했습니다.'
     alert(msg)
