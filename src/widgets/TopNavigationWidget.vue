@@ -141,6 +141,12 @@ const navItems = [
     isNew: true,
     tooltip: '아 점심 누구랑 먹지 들어온지 얼마 안돼서 사람들이랑 친해지고',
   },
+  {
+    label: '아 떠들고 싶다',
+    to: '/chat',
+    isNew: true,
+    tooltip: '단체 채팅한번 신나게 놀아볼까잉?',
+  },
 ]
 
 const isActive = (to: string) => {
